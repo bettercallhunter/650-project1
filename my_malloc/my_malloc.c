@@ -4,19 +4,12 @@
 
 
 // First Fit malloc/free
-// #include "my_malloc.h"
+#include "my_malloc.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-struct memory_blck_t {
-    size_t size;
-    int used;
-    struct memory_blck_t *next;
-    struct memory_blck_t *prev;
 
-    /* data */
-};
 typedef struct memory_blck_t memory_blck;
 memory_blck *head;
 memory_blck *tail;
@@ -60,12 +53,16 @@ void mergeFront(memory_blck *curr) {
     memory_blck *temp = curr->prev;
     temp->size += curr->size;
     curr->prev->next = curr->next;
-    curr->next->prev = temp;
+    if(curr->next){
+      curr->next->prev = temp;
+    }
 }
 void mergeBack(memory_blck *curr) {
     memory_blck *temp = curr->prev;
     curr->next->size += curr->size;
-    curr->prev->next = curr->next;
+    if (curr->prev){
+      curr->prev->next = curr->next;
+    }
     curr->next->prev = temp;
 }
 

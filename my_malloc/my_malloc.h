@@ -12,9 +12,9 @@ struct memory_blck_t {
     /* data */
 };
 typedef struct memory_blck_t memory_blck;
-void *ff_malloc(size_t size){
-
-};
-void ff_free(void *ptr){};
+void *ff_malloc(size_t size);
+void ff_free(void *ptr);
+void mergeBack(memory_blck *curr);
+void mergeFront(memory_blck *curr);
 
 #endif
