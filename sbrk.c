@@ -14,12 +14,12 @@ int main() {
     *x = 1;
     *y = 2;
     *z = 3;
-    printf("x = %p,y =c %p,z = %p \n", x, y, z);
+    printf("x = %p,y = %p,z = %p \n", x, y, z);
     printf("now freeing\n");
     void* j = sbrk(-4);
     printf("j = %p", j);
     printf("\n **************\n");
     void* k = sbrk(0);
-    printf("k = %p", k);
+    printf("k = %p \n", k);
     return 1;
 }
