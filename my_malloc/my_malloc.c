@@ -1,69 +1,119 @@
 #ifndef __MALLOC_C
 #define __MALLOC_C
 
-
-
 // First Fit malloc/free
 #include "my_malloc.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-
-typedef struct memory_blck_t memory_blck;
-memory_blck *head;
-memory_blck *tail;
-
+size_t used = 0;
 void *ff_malloc(size_t size) {
-    /*find the apporarite location*/
-    memory_blck **curr = &head;
-    memory_blck *ptr;
-
-    while (*curr != NULL) {
-        if ((*curr)->size >= size && (*curr)->used == 0) {
+    Node *curr = head;
+    while (curr != NULL) {
+        // find the next Node that is at least larger than size
+        if (curr->size > size) {
             break;
         } else {
-            curr = &((*curr)->next);
+            // traversal through the linkedlist
+            curr = curr->next;
         }
     }
-    if (*curr != NULL) {
-        (*curr)->used = 1;
-    } else {
-        *curr = sbrk(size + sizeof(memory_blck));
-        (*curr)->size = size;
-        (*curr)->next = NULL;
-        (*curr)->prev = tail;
-        (*curr)->used = 1;
-        tail = *curr;
+    // if no Node satisfied found, allocate new space
+    if (curr == NULL) {
+        void *ptr = sbrk(Meta_size + size);
+        if (ptr == (void *)-1) {
+            return NULL;
+        }
+        Node *requestedSpace = (Node *)ptr;
+        requestedSpace->prev = NULL;
+        requestedSpace->next = NULL;
+        requestedSpace->size = size;
+        // // add a offset of size of Meta data
+        return (void *)requestedSpace + Meta_size;
     }
-    return *curr + 1;
-};
-void ff_free(void *ptr) {
-    memory_blck *curr = (memory_blck *)(ptr - sizeof(memory_blck));
-    curr->used = 0;
-    if (curr->prev && curr->prev->used == 0) {
-        mergeFront(curr);
-        curr = curr->prev;
+
+    // enough space to split : size > meta data and allocation size
+    if (curr->size > size + Meta_size) {
+        Node *allocatedSpace = (Node *)((void *)curr + (curr->size) - size);
+        curr->size -= Meta_size + size;
+        allocatedSpace->size = size;
+        allocatedSpace->prev = NULL;
+        allocatedSpace->next = NULL;
+        return (void *)allocatedSpace + Meta_size;
     }
-    if (curr->next && curr->next->used == 0) {
-        mergeBack(curr);
+    // space enough to allocate, but not enough to hold meta data, no split needed, remove node from the linkedlist
+    else if (curr->size >= size && curr->size - size <= Meta_size) {
+        removeNode(curr);
+        return (void *)curr + Meta_size;
     }
-}
-void mergeFront(memory_blck *curr) {
-    memory_blck *temp = curr->prev;
-    temp->size += curr->size;
-    curr->prev->next = curr->next;
-    if(curr->next){
-      curr->next->prev = temp;
-    }
-}
-void mergeBack(memory_blck *curr) {
-    memory_blck *temp = curr->prev;
-    curr->next->size += curr->size;
-    if (curr->prev){
-      curr->prev->next = curr->next;
-    }
-    curr->next->prev = temp;
 }
 
+void ff_free(void *ptr) {
+    if(!ptr){
+        return;
+    }
+    // minus the offset of a meta_size, now pointer point at Node
+    Node *pointer = ptr - Meta_size;
+    // add Node
+    Node *curr = head;
+    while (curr && curr < pointer) {
+        // if curr smaller than the new freed block, we move to next
+
+        curr = curr->next;
+
+        // we find the right location, break
+    }
+
+    // now add node
+    // if curr is null, add at tail
+    if (!curr) {
+        pointer->prev = tail;
+        curr = pointer;
+        pointer->next = NULL;
+        tail = pointer;
+    } else {
+        pointer->next = curr;
+        pointer->prev = (curr)->prev;
+        (curr)->prev = pointer;
+        curr = pointer;
+    }
+    merge(pointer);
+    return;
+}
+
+void merge(Node *pointer) {
+    // if pointer is adjecent to prev Node
+    if (pointer->prev && (pointer->prev + Meta_size + pointer->prev->size == pointer)) {
+        pointer->prev->size += pointer->size;
+        removeNode(pointer);
+        pointer = pointer->prev;
+    }
+
+    if (pointer + Meta_size + pointer->size == pointer->next) {
+        pointer->size += pointer->next->size;
+        removeNode(pointer->next);
+    }
+}
+
+void removeNode(Node *curr) {
+    if (curr->prev) {
+        (curr)->prev->next = curr->next;
+
+    } else {
+        head = curr->next;
+    }
+    if (curr->next) {
+        curr->next->prev = curr->prev;
+    } else {
+        tail = curr->prev;
+    }
+}
+
+size_t get_data_segment_size() {
+    return 0;
+}
+size_t get_data_segment_free_space_size() {
+    return 0;
+}
 #endif
