@@ -7,7 +7,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-size_t used = 0;
+
+size_t heap_size = 0;
 void *ff_malloc(size_t size) {
     Node *curr = head;
     while (curr != NULL) {
@@ -21,6 +22,7 @@ void *ff_malloc(size_t size) {
     }
     // if no Node satisfied found, allocate new space
     if (curr == NULL) {
+        heap_size -= size;
         void *ptr = sbrk(Meta_size + size);
         if (ptr == (void *)-1) {
             return NULL;
@@ -35,6 +37,7 @@ void *ff_malloc(size_t size) {
 
     // enough space to split : size > meta data and allocation size
     if (curr->size > size + Meta_size) {
+        heap_size -= size + Meta_size;
         Node *allocatedSpace = (Node *)((void *)curr + (curr->size) - size);
         curr->size -= Meta_size + size;
         allocatedSpace->size = size;
@@ -44,17 +47,20 @@ void *ff_malloc(size_t size) {
     }
     // space enough to allocate, but not enough to hold meta data, no split needed, remove node from the linkedlist
     else if (curr->size >= size && curr->size - size <= Meta_size) {
+        heap_size -= curr->size;
         removeNode(curr);
         return (void *)curr + Meta_size;
     }
 }
 
 void ff_free(void *ptr) {
-    if(!ptr){
+    if (!ptr) {
         return;
     }
+
     // minus the offset of a meta_size, now pointer point at Node
     Node *pointer = ptr - Meta_size;
+    heap_size += pointer->size;
     // add Node
     Node *curr = head;
     while (curr && curr < pointer) {
@@ -85,12 +91,14 @@ void ff_free(void *ptr) {
 void merge(Node *pointer) {
     // if pointer is adjecent to prev Node
     if (pointer->prev && (pointer->prev + Meta_size + pointer->prev->size == pointer)) {
+        heap_size += Meta_size;
         pointer->prev->size += pointer->size;
         removeNode(pointer);
         pointer = pointer->prev;
     }
 
     if (pointer + Meta_size + pointer->size == pointer->next) {
+        heap_size += Meta_size;
         pointer->size += pointer->next->size;
         removeNode(pointer->next);
     }
@@ -111,9 +119,17 @@ void removeNode(Node *curr) {
 }
 
 size_t get_data_segment_size() {
-    return 0;
+
+    return heap_size;
 }
 size_t get_data_segment_free_space_size() {
-    return 0;
+    Node **curr = &head;
+    size_t size = 0;
+    while (*curr) {
+        size += (*curr)->size;
+        curr = &((*curr)->next);
+    }
+    printf("%ld", size);
+    return size;
 }
 #endif
