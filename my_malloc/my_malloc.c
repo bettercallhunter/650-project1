@@ -7,13 +7,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-
 size_t heap_size = 0;
 void *ff_malloc(size_t size) {
     Node *curr = head;
     while (curr != NULL) {
         // find the next Node that is at least larger than size
-        if (curr->size > size) {
+        if (curr->size >= size) {
             break;
         } else {
             // traversal through the linkedlist
@@ -45,7 +44,7 @@ void *ff_malloc(size_t size) {
         return (void *)allocatedSpace + Meta_size;
     }
     // space enough to allocate, but not enough to hold meta data, no split needed, remove node from the linkedlist
-    else if (curr->size >= size && curr->size - size <= Meta_size) {
+    else if (curr->size >= size && curr->size - size < Meta_size) {
         removeNode(curr);
         return (void *)curr + Meta_size;
     }
