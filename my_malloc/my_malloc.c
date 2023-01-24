@@ -1,9 +1,9 @@
 #ifndef __MALLOC_C
 #define __MALLOC_C
-
-// First Fit malloc/free
 #include "my_malloc.h"
 
+#include <math.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -33,7 +33,6 @@ void *ff_malloc(size_t size) {
         // // add a offset of size of Meta data
         return (void *)requestedSpace + Meta_size;
     }
-
     // enough space to split : size > meta data and allocation size
     if (curr->size > size + Meta_size) {
         Node *allocatedSpace = (Node *)((void *)curr + (curr->size) - size);
@@ -49,8 +48,114 @@ void *ff_malloc(size_t size) {
         return (void *)curr + Meta_size;
     }
 }
+void *bf_malloc(size_t size) {
+    Node *curr = head;
+    Node *best = NULL;
+    size_t overHead = SIZE_MAX;
+    while (curr != NULL) {
+        // find the next Node that is at least larger than size
+        // update best if find a better fit
+        if (curr->size >= size && curr->size - size < overHead) {
+            best = curr;
+            overHead = curr->size - size;
+            // traversal through the linkedlist
+            if (overHead == 0) {
+                break;
+            }
+        }
+        curr = curr->next;
+    }
+    curr = best;
+    // if no Node satisfied found, allocate new space
+    if (curr == NULL) {
+        // printf("%d", 1);
+        void *ptr = sbrk(Meta_size + size);
+        heap_size += Meta_size + size;
+        if (ptr == (void *)-1) {
+            return NULL;
+        }
+        Node *requestedSpace = (Node *)ptr;
+        requestedSpace->prev = NULL;
+        requestedSpace->next = NULL;
+        requestedSpace->size = size;
+        // add a offset of size of Meta data
+        return (void *)requestedSpace + Meta_size;
+    }
+
+    // enough space to split : size > meta data and allocation size
+    if (curr->size > size + Meta_size) {
+        //        printf("%d", 2);
+        Node *allocatedSpace = (Node *)((void *)curr + (curr->size) - size);
+        curr->size -= Meta_size + size;
+        allocatedSpace->size = size;
+        allocatedSpace->prev = NULL;
+        allocatedSpace->next = NULL;
+        return (void *)allocatedSpace + Meta_size;
+    }
+    // space enough to allocate, but not enough to hold meta data, no split needed, remove node from the linkedlist
+    else if (curr->size >= size && curr->size - size <= Meta_size) {
+        //        printf("%d", 3);
+        removeNode(curr);
+        return (void *)curr + Meta_size;
+    }
+}
 
 void ff_free(void *ptr) {
+    my_free(ptr);
+}
+void bf_free(void *ptr) {
+    my_free(ptr);
+}
+void merge(Node *toAdd) {
+    mergeBack(toAdd);
+    mergeFront(toAdd);
+}
+void mergeBack(Node *toAdd) {
+    if (toAdd->next && (void *)toAdd + Meta_size + toAdd->size == (void *)toAdd->next) {
+        // modify size of the Node
+        toAdd->size += Meta_size + toAdd->next->size;
+        // if nextNode is not tail, need modify next next
+        if (toAdd->next->next) {
+            toAdd->next->next->prev = toAdd;
+        }
+        toAdd->next = toAdd->next->next;
+    }
+}
+void mergeFront(Node *toAdd) {
+    // if pointer is adjecent to prev Node
+    if (toAdd->prev && (void *)toAdd->prev + toAdd->prev->size + Meta_size == (void *)toAdd) {
+        toAdd->prev->size += toAdd->size + Meta_size;
+        toAdd->prev->next = toAdd->next;
+        if (toAdd->next) {
+            toAdd->next->prev = toAdd->prev;
+        }
+    }
+}
+void removeNode(Node *curr) {
+    if (curr->prev) {
+        (curr)->prev->next = curr->next;
+    } else {
+        head = curr->next;
+    }
+    if (curr->next) {
+        curr->next->prev = curr->prev;
+    } else {
+        tail = curr->prev;
+    }
+}
+unsigned long get_data_segment_size() {
+    return heap_size;
+}
+unsigned long get_data_segment_free_space_size() {
+    Node *curr = head;
+    unsigned long size = 0;
+    while (curr) {
+        size += curr->size + Meta_size;
+        curr = curr->next;
+    }
+    return size;
+}
+void my_free(void *ptr) {
     if (!ptr) {
         return;
     }
@@ -109,56 +214,5 @@ void addNode(Node *curr, Node *toAdd) {
         merge(toAdd);
         return;
     }
-}
-void merge(Node *toAdd) {
-    mergeBack(toAdd);
-    mergeFront(toAdd);
-}
-void mergeBack(Node *toAdd) {
-    if (toAdd->next && (void *)toAdd + Meta_size + toAdd->size == (void *)toAdd->next) {
-        // modify size of the Node
-        toAdd->size += Meta_size + toAdd->next->size;
-        // if nextNode is not tail, need modify next next
-        if (toAdd->next->next) {
-            toAdd->next->next->prev = toAdd;
-        }
-        toAdd->next = toAdd->next->next;
-    }
-}
-void mergeFront(Node *toAdd) {
-    // if pointer is adjecent to prev Node
-    if (toAdd->prev && (void *)toAdd->prev + toAdd->prev->size + Meta_size == (void *)toAdd) {
-        toAdd->prev->size += toAdd->size + Meta_size;
-        toAdd->prev->next = toAdd->next;
-        if (toAdd->next) {
-            toAdd->next->prev = toAdd->prev;
-        }
-    }
-}
-
-void removeNode(Node *curr) {
-    if (curr->prev) {
-        (curr)->prev->next = curr->next;
-    } else {
-        head = curr->next;
-    }
-    if (curr->next) {
-        curr->next->prev = curr->prev;
-    } else {
-        tail = curr->prev;
-    }
-}
-
-unsigned long get_data_segment_size() {
-    return heap_size;
-}
-unsigned long get_data_segment_free_space_size() {
-    Node *curr = head;
-    unsigned long size = 0;
-    while (curr) {
-        size += curr->size + Meta_size;
-        curr = curr->next;
-    }
-    return size;
 }
 #endif

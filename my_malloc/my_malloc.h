@@ -16,13 +16,16 @@ Node *head;
 Node *tail;
 
 void *ff_malloc(size_t size);
+void *bf_malloc(size_t size);
 void ff_free(void *ptr);
+void my_free(void *ptr);
+void bf_free(void *ptr);
 void merge(Node *toAdd);
 void mergeBack(Node *toAdd);
 void mergeFront(Node *toAdd);
 void removeNode(Node *curr);
-Node *split(Node *curr, size_t size);
 size_t get_data_segment_size();
 void addNode(Node *curr, Node *toAdd);
 size_t get_data_segment_free_space_size();
+
 #endif
