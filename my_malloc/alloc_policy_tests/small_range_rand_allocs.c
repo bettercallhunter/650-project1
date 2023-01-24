@@ -54,7 +54,6 @@ int main(int argc, char *argv[]) {
         malloc_items[1][i].bytes = ((rand() % (max_chunks - min_chunks + 1)) + min_chunks) * chunk_size;
         free_list[i] = i;
     }  // for i
-
     i = NUM_ITEMS;
     while (i > 1) {
         i--;
@@ -83,7 +82,6 @@ int main(int argc, char *argv[]) {
             }  // for k
         }      // for j
     }          // for i
-
     // Stop Time
     clock_gettime(CLOCK_MONOTONIC, &end_time);
 

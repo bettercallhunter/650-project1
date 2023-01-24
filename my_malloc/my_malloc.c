@@ -56,6 +56,9 @@ void ff_free(void *ptr) {
     }
     // minus the offset of a meta_size, now pointer point at Node
     Node *pointer = ptr - Meta_size;
+    if (!pointer) {
+        return;
+    }
     heap_size += pointer->size;
     // add Node
     Node *curr = head;
