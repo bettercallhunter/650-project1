@@ -1,0 +1,3 @@
+data_segment_size = 3720392, data_segment_free_space = 296160
+Execution Time = 14.032706 seconds
+Fragmentation  = 0.079605

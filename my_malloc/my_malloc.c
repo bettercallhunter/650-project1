@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-size_t heap_size = 0;
+unsigned long heap_size = 0;
 void *ff_malloc(size_t size) {
     Node *curr = head;
     while (curr != NULL) {
@@ -44,7 +44,7 @@ void *ff_malloc(size_t size) {
         return (void *)allocatedSpace + Meta_size;
     }
     // space enough to allocate, but not enough to hold meta data, no split needed, remove node from the linkedlist
-    else if (curr->size >= size && curr->size - size < Meta_size) {
+    else if (curr->size >= size && curr->size - size <= Meta_size) {
         removeNode(curr);
         return (void *)curr + Meta_size;
     }
@@ -59,7 +59,6 @@ void ff_free(void *ptr) {
     if (!pointer) {
         return;
     }
-    heap_size += pointer->size;
     // add Node
     Node *curr = head;
     while (curr) {
@@ -150,12 +149,12 @@ void removeNode(Node *curr) {
     }
 }
 
-size_t get_data_segment_size() {
+unsigned long get_data_segment_size() {
     return heap_size;
 }
-size_t get_data_segment_free_space_size() {
+unsigned long get_data_segment_free_space_size() {
     Node *curr = head;
-    size_t size = head->size;
+    unsigned long size = 0;
     while (curr) {
         size += curr->size + Meta_size;
         curr = curr->next;
