@@ -49,6 +49,7 @@ void *ff_malloc(size_t size) {
     }
 }
 void *bf_malloc(size_t size) {
+    /*
     Node *curr = head;
     Node *best = NULL;
     size_t overHead = SIZE_MAX;
@@ -95,13 +96,14 @@ void *bf_malloc(size_t size) {
         removeNode(curr);
         return (void *)curr + Meta_size;
     }
+    */
 }
 
 void ff_free(void *ptr) {
     my_free(ptr);
 }
 void bf_free(void *ptr) {
-    my_free(ptr);
+    // my_free(ptr);
 }
 void merge(Node *toAdd) {
     mergeBack(toAdd);
@@ -218,6 +220,8 @@ void printfreehelp() {
         curr = curr->next;
     }
     printf("\n");
+}
+int main(int argc, char *argv[]) {
 }
 
 #endif
