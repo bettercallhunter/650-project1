@@ -55,7 +55,7 @@ void *bf_malloc(size_t size) {
     while (curr != NULL) {
         // find the next Node that is at least larger than size
         // update best if find a better fit
-        if (curr->size >= size && curr->size - size < overHead) {
+        if (curr->size >= size && curr->size - size <= overHead) {
             best = curr;
             overHead = curr->size - size;
             // traversal through the linkedlist
