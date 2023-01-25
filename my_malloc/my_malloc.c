@@ -80,7 +80,6 @@ void *bf_malloc(size_t size) {
         // add a offset of size of Meta data
         return (void *)requestedSpace + Meta_size;
     }
-
     // enough space to split : size > meta data and allocation size
     if (curr->size > size + Meta_size) {
         Node *allocatedSpace = (Node *)((void *)curr + (curr->size) - size);
@@ -215,7 +214,5 @@ void addNode(Node *curr, Node *toAdd) {
     }
 }
 
-int main(int argc, char *argv[]) {
-}
 
 #endif
