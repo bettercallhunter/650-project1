@@ -9,47 +9,46 @@
 #include <unistd.h>
 unsigned long heap_size = 0;
 void *ff_malloc(size_t size) {
-    // Node *curr = head;
-    // while (curr != NULL) {
-    //     // find the next Node that is at least larger than size
-    //     if (curr->size >= size) {
-    //         break;
-    //     } else {
-    //         // traversal through the linkedlist
-    //         curr = curr->next;
-    //     }
-    // }
-    // // if no Node satisfied found, allocate new space
-    // if (curr == NULL) {
-    //     void *ptr = sbrk(Meta_size + size);
-    //     heap_size += Meta_size + size;
-    //     if (ptr == (void *)-1) {
-    //         return NULL;
-    //     }
-    //     Node *requestedSpace = (Node *)ptr;
-    //     requestedSpace->prev = NULL;
-    //     requestedSpace->next = NULL;
-    //     requestedSpace->size = size;
-    //     // // add a offset of size of Meta data
-    //     return (void *)requestedSpace + Meta_size;
-    // }
-    // // enough space to split : size > meta data and allocation size
-    // if (curr->size > size + Meta_size) {
-    //     Node *allocatedSpace = (Node *)((void *)curr + (curr->size) - size);
-    //     curr->size -= Meta_size + size;
-    //     allocatedSpace->size = size;
-    //     allocatedSpace->prev = NULL;
-    //     allocatedSpace->next = NULL;
-    //     return (void *)allocatedSpace + Meta_size;
-    // }
-    // // space enough to allocate, but not enough to hold meta data, no split needed, remove node from the linkedlist
-    // else if (curr->size >= size && curr->size - size <= Meta_size) {
-    //     removeNode(curr);
-    //     return (void *)curr + Meta_size;
-    // }
+    Node *curr = head;
+    while (curr != NULL) {
+        // find the next Node that is at least larger than size
+        if (curr->size >= size) {
+            break;
+        } else {
+            // traversal through the linkedlist
+            curr = curr->next;
+        }
+    }
+    // if no Node satisfied found, allocate new space
+    if (curr == NULL) {
+        void *ptr = sbrk(Meta_size + size);
+        heap_size += Meta_size + size;
+        if (ptr == (void *)-1) {
+            return NULL;
+        }
+        Node *requestedSpace = (Node *)ptr;
+        requestedSpace->prev = NULL;
+        requestedSpace->next = NULL;
+        requestedSpace->size = size;
+        // // add a offset of size of Meta data
+        return (void *)requestedSpace + Meta_size;
+    }
+    // enough space to split : size > meta data and allocation size
+    if (curr->size > size + Meta_size) {
+        Node *allocatedSpace = (Node *)((void *)curr + (curr->size) - size);
+        curr->size -= Meta_size + size;
+        allocatedSpace->size = size;
+        allocatedSpace->prev = NULL;
+        allocatedSpace->next = NULL;
+        return (void *)allocatedSpace + Meta_size;
+    }
+    // space enough to allocate, but not enough to hold meta data, no split needed, remove node from the linkedlist
+    else if (curr->size >= size && curr->size - size <= Meta_size) {
+        removeNode(curr);
+        return (void *)curr + Meta_size;
+    }
 }
 void *bf_malloc(size_t size) {
-    
     Node *curr = head;
     Node *best = NULL;
     size_t overHead = SIZE_MAX;
@@ -96,11 +95,10 @@ void *bf_malloc(size_t size) {
         removeNode(curr);
         return (void *)curr + Meta_size;
     }
-    
 }
 
 void ff_free(void *ptr) {
-    //my_free(ptr);
+    my_free(ptr);
 }
 void bf_free(void *ptr) {
     my_free(ptr);
@@ -114,8 +112,11 @@ void mergeBack(Node *toAdd) {
         // modify size of the Node
         toAdd->size += Meta_size + toAdd->next->size;
         // if nextNode is not tail, need modify next next
+
         if (toAdd->next->next) {
             toAdd->next->next->prev = toAdd;
+        } else {
+            tail = toAdd;
         }
         toAdd->next = toAdd->next->next;
     }
@@ -213,14 +214,7 @@ void addNode(Node *curr, Node *toAdd) {
         return;
     }
 }
-void printfreehelp() {
-    Node *curr = head;
-    while (curr) {
-        printf("%p(size: %zu) ->", curr, (curr->size + 24));
-        curr = curr->next;
-    }
-    printf("\n");
-}
+
 int main(int argc, char *argv[]) {
 }
 
