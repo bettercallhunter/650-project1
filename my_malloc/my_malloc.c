@@ -60,7 +60,7 @@ void *bf_malloc(size_t size) {
             overHead = curr->size - size;
             // traversal through the linkedlist
             if (overHead == 0) {
-                break;
+                return (void *)best + Meta_size;
             }
         }
         curr = curr->next;
@@ -213,6 +213,5 @@ void addNode(Node *curr, Node *toAdd) {
         return;
     }
 }
-
 
 #endif
