@@ -31,22 +31,23 @@ void *ff_malloc(size_t size) {
         requestedSpace->next = NULL;
         requestedSpace->size = size;
         // // add a offset of size of Meta data
-        return (void *)requestedSpace + Meta_size;
+        return (char *)requestedSpace + Meta_size;
     }
     // enough space to split : size > meta data and allocation size
     if (curr->size > size + Meta_size) {
-        Node *allocatedSpace = (Node *)((void *)curr + (curr->size) - size);
+        Node *allocatedSpace = (Node *)((char *)curr + (curr->size) - size);
         curr->size -= Meta_size + size;
         allocatedSpace->size = size;
         allocatedSpace->prev = NULL;
         allocatedSpace->next = NULL;
-        return (void *)allocatedSpace + Meta_size;
+        return (char *)allocatedSpace + Meta_size;
     }
     // space enough to allocate, but not enough to hold meta data, no split needed, remove node from the linkedlist
     else if (curr->size >= size && curr->size - size <= Meta_size) {
         removeNode(curr);
-        return (void *)curr + Meta_size;
+        return (char *)curr + Meta_size;
     }
+    return NULL;
 }
 void *bf_malloc(size_t size) {
     Node *curr = head;
@@ -61,7 +62,7 @@ void *bf_malloc(size_t size) {
             // traversal through the linkedlist
             if (overHead == 0) {
                 removeNode(curr);
-                return (void *)curr + Meta_size;
+                return (char *)curr + Meta_size;
             }
         }
         curr = curr->next;
@@ -79,22 +80,23 @@ void *bf_malloc(size_t size) {
         requestedSpace->next = NULL;
         requestedSpace->size = size;
         // add a offset of size of Meta data
-        return (void *)requestedSpace + Meta_size;
+        return (char *)requestedSpace + Meta_size;
     }
     // enough space to split : size > meta data and allocation size
     if (curr->size > size + Meta_size) {
-        Node *allocatedSpace = (Node *)((void *)curr + (curr->size) - size);
+        Node *allocatedSpace = (Node *)((char *)curr + (curr->size) - size);
         curr->size -= Meta_size + size;
         allocatedSpace->size = size;
         allocatedSpace->prev = NULL;
         allocatedSpace->next = NULL;
-        return (void *)allocatedSpace + Meta_size;
+        return (char *)allocatedSpace + Meta_size;
     }
     // space enough to allocate, but not enough to hold meta data, no split needed, remove node from the linkedlist
     else if (curr->size >= size && curr->size - size <= Meta_size) {
         removeNode(curr);
-        return (void *)curr + Meta_size;
+        return (char *)curr + Meta_size;
     }
+    return NULL;
 }
 
 void ff_free(void *ptr) {
@@ -108,7 +110,7 @@ void merge(Node *toAdd) {
     mergeFront(toAdd);
 }
 void mergeBack(Node *toAdd) {
-    if (toAdd->next && (void *)toAdd + Meta_size + toAdd->size == (void *)toAdd->next) {
+    if (toAdd->next && (char *)toAdd + Meta_size + toAdd->size == (char *)toAdd->next) {
         // modify size of the Node
         toAdd->size += Meta_size + toAdd->next->size;
         // if nextNode is not tail, need modify next next
@@ -123,7 +125,7 @@ void mergeBack(Node *toAdd) {
 }
 void mergeFront(Node *toAdd) {
     // if pointer is adjecent to prev Node
-    if (toAdd->prev && (void *)toAdd->prev + toAdd->prev->size + Meta_size == (void *)toAdd) {
+    if (toAdd->prev && (char *)toAdd->prev + toAdd->prev->size + Meta_size == (char *)toAdd) {
         toAdd->prev->size += toAdd->size + Meta_size;
         toAdd->prev->next = toAdd->next;
         if (toAdd->next) {
@@ -162,7 +164,7 @@ void my_free(void *ptr) {
         return;
     }
     // minus the offset of a meta_size, now pointer point at Node
-    Node *pointer = ptr - Meta_size;
+    Node *pointer = (Node *)((char *)ptr - Meta_size);
     if (!pointer) {
         return;
     }
