@@ -128,6 +128,8 @@ void mergeFront(Node *toAdd) {
         toAdd->prev->next = toAdd->next;
         if (toAdd->next) {
             toAdd->next->prev = toAdd->prev;
+        } else {
+            tail = toAdd;
         }
     }
 }
