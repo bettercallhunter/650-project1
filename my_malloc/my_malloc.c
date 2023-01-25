@@ -68,7 +68,6 @@ void *bf_malloc(size_t size) {
     curr = best;
     // if no Node satisfied found, allocate new space
     if (curr == NULL) {
-        // printf("%d", 1);
         void *ptr = sbrk(Meta_size + size);
         heap_size += Meta_size + size;
         if (ptr == (void *)-1) {
@@ -84,7 +83,6 @@ void *bf_malloc(size_t size) {
 
     // enough space to split : size > meta data and allocation size
     if (curr->size > size + Meta_size) {
-        //        printf("%d", 2);
         Node *allocatedSpace = (Node *)((void *)curr + (curr->size) - size);
         curr->size -= Meta_size + size;
         allocatedSpace->size = size;
@@ -94,7 +92,6 @@ void *bf_malloc(size_t size) {
     }
     // space enough to allocate, but not enough to hold meta data, no split needed, remove node from the linkedlist
     else if (curr->size >= size && curr->size - size <= Meta_size) {
-        //        printf("%d", 3);
         removeNode(curr);
         return (void *)curr + Meta_size;
     }
@@ -168,10 +165,10 @@ void my_free(void *ptr) {
     Node *curr = head;
     while (curr) {
         // if curr smaller than the new freed block, we move to next
-        curr = curr->next;
         if (curr > pointer) {
             break;
         }
+        curr = curr->next;
     }
     addNode(curr, pointer);
 }
@@ -191,11 +188,10 @@ void addNode(Node *curr, Node *toAdd) {
             toAdd->prev = tail;
             toAdd->next = NULL;
             tail = toAdd;
-            mergeFront(toAdd);
         }
     }
     // add Node right before curr
-    if (curr) {
+    else {
         // if curr is head
         if (!curr->prev) {
             head = toAdd;
@@ -215,4 +211,13 @@ void addNode(Node *curr, Node *toAdd) {
         return;
     }
 }
+void printfreehelp() {
+    Node *curr = head;
+    while (curr) {
+        printf("%p(size: %zu) ->", curr, (curr->size + 24));
+        curr = curr->next;
+    }
+    printf("\n");
+}
+
 #endif
