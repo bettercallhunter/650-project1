@@ -218,5 +218,55 @@ void addNode(Node *curr, Node *toAdd) {
         return;
     }
 }
+void printfreehelp() {
+    Node *curr = head;
+    while (curr) {
+        printf("%p ->", curr);
+        curr = curr->next;
+    }
+    printf("\n");
+}
+int main(int argc, char *argv[]) {
+    printf("md_t size: %zu\n", sizeof(Node));
+
+    int *t2 = bf_malloc(41);
+    printf("2:\npos: %p, size: %d\n", t2, 65);
+    // int *t2 = ff_malloc(sizeof(int));
+    // printf("2:\npos: %p, size: %zu\n", t2, sizeof(int)+32);
+    // ff_free(t2);
+
+    double *t3 = bf_malloc(sizeof(double));
+    printf("3:\npos: %p, size: %zu\n", t3, sizeof(double) + 24);
+    printf("before freeing t2: *******************\n");
+    printfreehelp();
+    bf_free(t2);
+
+    printf("after freeing t2:************** \n");
+    printfreehelp();
+
+    // double *t4 = ff_malloc(sizeof(double));
+    // printf("4:\npos: %p, size: %zu\n", t4, sizeof(double)+32);
+    double *t4 = bf_malloc(sizeof(int));
+    printf("4:\npos: %p, size: %zu\n", t4, sizeof(int) + 24);
+
+    // ff_free(t4);
+    printfreehelp();
+    // ff_free(t3);
+    // printfreehelp();
+
+    int *t1 = bf_malloc(sizeof(int));
+    printf("1:\npos: %p, size: %zu\n", t1, sizeof(int) + 24);
+
+    printfreehelp();
+    bf_free(t1);
+    printfreehelp();
+    bf_free(t3);
+    printfreehelp();
+
+    bf_free(t4);
+    printfreehelp();
+
+    return 0;
+}
 
 #endif
