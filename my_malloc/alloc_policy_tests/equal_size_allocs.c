@@ -26,7 +26,7 @@ double calc_time(struct timespec start, struct timespec end) {
     } else {
         return end_sec - start_sec;
     }
-};
+}
 
 int main(int argc, char *argv[]) {
     int i, j;

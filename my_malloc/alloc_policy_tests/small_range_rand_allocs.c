@@ -72,7 +72,6 @@ int main(int argc, char *argv[]) {
     clock_gettime(CLOCK_MONOTONIC, &start_time);
 
     for (i = 0; i < NUM_ITERS; i++) {
-        printf("i: %d\n", i);
         unsigned malloc_set = i % 2;
         for (j = 0; j < NUM_ITEMS; j += 50) {
             for (k = 0; k < 50; k++) {
