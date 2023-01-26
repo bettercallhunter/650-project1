@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+
 unsigned long heap_size = 0;
 void *ff_malloc(size_t size) {
     Node *curr = head;
@@ -114,10 +115,11 @@ void mergeBack(Node *toAdd) {
         // modify size of the Node
         toAdd->size += Meta_size + toAdd->next->size;
         // if nextNode is not tail, need modify next next
-
+        // if toAdd->next is not tail
         if (toAdd->next->next) {
             toAdd->next->next->prev = toAdd;
         } else {
+            // if toAdd->next is tail, need to modify tail
             tail = toAdd;
         }
         toAdd->next = toAdd->next->next;
@@ -128,22 +130,28 @@ void mergeFront(Node *toAdd) {
     if (toAdd->prev && (char *)toAdd->prev + toAdd->prev->size + Meta_size == (char *)toAdd) {
         toAdd->prev->size += toAdd->size + Meta_size;
         toAdd->prev->next = toAdd->next;
+        // if toAdd is not tail
         if (toAdd->next) {
             toAdd->next->prev = toAdd->prev;
         } else {
+            // if toAdd is tail
             tail = toAdd;
         }
     }
 }
 void removeNode(Node *curr) {
+    // if curr is not head
     if (curr->prev) {
         (curr)->prev->next = curr->next;
     } else {
+        // if curr is head
         head = curr->next;
     }
+    // if curr is not tail
     if (curr->next) {
         curr->next->prev = curr->prev;
     } else {
+        // if curr is tail
         tail = curr->prev;
     }
 }
@@ -165,12 +173,15 @@ void my_free(void *ptr) {
     }
     // minus the offset of a meta_size, now pointer point at Node
     Node *pointer = (Node *)((char *)ptr - Meta_size);
-    if (!pointer) {
+    if (!pointer || pointer == head) {
         return;
     }
     // add Node
     Node *curr = head;
     while (curr) {
+        if (curr == pointer) {
+            return;
+        }
         // if curr smaller than the new freed block, we move to next
         if (curr > pointer) {
             break;
@@ -217,56 +228,6 @@ void addNode(Node *curr, Node *toAdd) {
         merge(toAdd);
         return;
     }
-}
-void printfreehelp() {
-    Node *curr = head;
-    while (curr) {
-        printf("%p ->", curr);
-        curr = curr->next;
-    }
-    printf("\n");
-}
-int main(int argc, char *argv[]) {
-    printf("md_t size: %zu\n", sizeof(Node));
-
-    int *t2 = bf_malloc(41);
-    printf("2:\npos: %p, size: %d\n", t2, 65);
-    // int *t2 = ff_malloc(sizeof(int));
-    // printf("2:\npos: %p, size: %zu\n", t2, sizeof(int)+32);
-    // ff_free(t2);
-
-    double *t3 = bf_malloc(sizeof(double));
-    printf("3:\npos: %p, size: %zu\n", t3, sizeof(double) + 24);
-    printf("before freeing t2: *******************\n");
-    printfreehelp();
-    bf_free(t2);
-
-    printf("after freeing t2:************** \n");
-    printfreehelp();
-
-    // double *t4 = ff_malloc(sizeof(double));
-    // printf("4:\npos: %p, size: %zu\n", t4, sizeof(double)+32);
-    double *t4 = bf_malloc(sizeof(int));
-    printf("4:\npos: %p, size: %zu\n", t4, sizeof(int) + 24);
-
-    // ff_free(t4);
-    printfreehelp();
-    // ff_free(t3);
-    // printfreehelp();
-
-    int *t1 = bf_malloc(sizeof(int));
-    printf("1:\npos: %p, size: %zu\n", t1, sizeof(int) + 24);
-
-    printfreehelp();
-    bf_free(t1);
-    printfreehelp();
-    bf_free(t3);
-    printfreehelp();
-
-    bf_free(t4);
-    printfreehelp();
-
-    return 0;
 }
 
 #endif
