@@ -57,7 +57,7 @@ void *bf_malloc(size_t size) {
     while (curr != NULL) {
         // find the next Node that is at least larger than size
         // update best if find a better fit
-        if (curr->size >= size && curr->size - size <= overHead) {
+        if (curr->size >= size && curr->size - size < overHead) {
             best = curr;
             overHead = curr->size - size;
             // traversal through the linkedlist
@@ -118,11 +118,12 @@ void mergeBack(Node *toAdd) {
         // if toAdd->next is not tail
         if (toAdd->next->next) {
             toAdd->next->next->prev = toAdd;
+            toAdd->next = toAdd->next->next;
         } else {
             // if toAdd->next is tail, need to modify tail
             tail = toAdd;
+            toAdd->next = NULL;
         }
-        toAdd->next = toAdd->next->next;
     }
 }
 void mergeFront(Node *toAdd) {
@@ -135,7 +136,8 @@ void mergeFront(Node *toAdd) {
             toAdd->next->prev = toAdd->prev;
         } else {
             // if toAdd is tail
-            tail = toAdd;
+            tail = toAdd->prev;
+            toAdd->prev->next = NULL;
         }
     }
 }
@@ -173,6 +175,7 @@ void my_free(void *ptr) {
     }
     // minus the offset of a meta_size, now pointer point at Node
     Node *pointer = (Node *)((char *)ptr - Meta_size);
+
     if (!pointer || pointer == head) {
         return;
     }
